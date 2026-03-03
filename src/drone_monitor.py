@@ -81,21 +81,26 @@ class DroneMonitor:
 
     # ---------- RISK layer (твій "мозок") ----------
     def compute_risk_score(self, battery, link_state, severe_count, critical_count):
+       """
+       Аналітичний центр: оцінка ризиків на основі телеметрії.
+       """
+        
         risk = 0
 
-        # батарея
+        # 1. Енергетичний аудит (батарея)
         if battery < self.safe_battery_level:
-            risk += 4
+            risk += 4   # Критичний рівень
         elif battery < self.safe_battery_level + 10:
-            risk += 2
+            risk += 2   # Попередження - підвищена увага
 
-        # стан лінку
+        # 2. Аналіз каналу зв'язку (стан лінку)
         if link_state == "DEGRADED_LINK":
             risk += 2
         elif link_state == "FAILSAFE":
             risk += 4
 
-        # severe / critical накопичення у вікні
+        # 3. Накопичувальний ефект (ковзне вікно помилок) 
+        # Використовуємо кофіцієнти для згладжування випадкових шумів
         risk += severe_count * 0.5
         risk += critical_count * 1.0
 
